@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
-import { NavLink } from "react-router-dom"
+import React, { useState } from 'react';
+import { NavLink } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "./mix.css"
+import "./mix.css";
 
 const Register = () => {
-
     const [passShow, setPassShow] = useState(false);
     const [cpassShow, setCPassShow] = useState(false);
 
@@ -16,17 +15,9 @@ const Register = () => {
         cpassword: ""
     });
 
-
     const setVal = (e) => {
-        // console.log(e.target.value);
         const { name, value } = e.target;
-
-        setInpval(() => {
-            return {
-                ...inpval,
-                [name]: value
-            }
-        })
+        setInpval(prev => ({ ...prev, [name]: value }));
     };
 
     const addUserdata = async (e) => {
@@ -35,63 +26,47 @@ const Register = () => {
         const { fname, email, password, cpassword } = inpval;
 
         if (fname === "") {
-            toast.warning("fname is required!", {
-                position: "top-center"
-            });
+            toast.warning("Name is required!", { position: "top-center" });
         } else if (email === "") {
-            toast.error("email is required!", {
-                position: "top-center"
-            });
+            toast.error("Email is required!", { position: "top-center" });
         } else if (!email.includes("@")) {
-            toast.warning("includes @ in your email!", {
-                position: "top-center"
-            });
+            toast.warning("Include @ in your email!", { position: "top-center" });
         } else if (password === "") {
-            toast.error("password is required!", {
-                position: "top-center"
-            });
+            toast.error("Password is required!", { position: "top-center" });
         } else if (password.length < 6) {
-            toast.error("password must be 6 char!", {
-                position: "top-center"
-            });
+            toast.error("Password must be at least 6 characters!", { position: "top-center" });
         } else if (cpassword === "") {
-            toast.error("cpassword is required!", {
-                position: "top-center"
-            });
-        }
-        else if (cpassword.length < 6) {
-            toast.error("confirm password must be 6 char!", {
-                position: "top-center"
-            });
+            toast.error("Confirm password is required!", { position: "top-center" });
+        } else if (cpassword.length < 6) {
+            toast.error("Confirm password must be at least 6 characters!", { position: "top-center" });
         } else if (password !== cpassword) {
-            toast.error("pass and Cpass are not matching!", {
-                position: "top-center"
-            });
+            toast.error("Passwords do not match!", { position: "top-center" });
         } else {
-            // console.log("user registration succesfully done");
-
-
-            const data = await fetch("/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    fname, email, password, cpassword
-                })
-            });
-
-            const res = await data.json();
-            // console.log(res.status);
-
-            if (res.status === 201) {
-                toast.success("Registration Successfully done 😃!", {
-                    position: "top-center"
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ fname, email, password, cpassword })
                 });
-                setInpval({ ...inpval, fname: "", email: "", password: "", cpassword: "" });
+
+                if (response.ok && response.headers.get("Content-Type").includes("application/json")) {
+                    const res = await response.json();
+                    if (res.status === 201) {
+                        toast.success("Registration successful 😃!", { position: "top-center" });
+                        setInpval({ fname: "", email: "", password: "", cpassword: "" });
+                    } else {
+                        toast.error(res.error || "Registration failed. Please try again.", { position: "top-center" });
+                    }
+                } else {
+                    toast.error("Something went wrong. Please try again.", { position: "top-center" });
+                }
+            } catch (error) {
+                toast.error("Server error. Please try again later.", { position: "top-center" });
             }
         }
-    }
+    };
 
     return (
         <>
@@ -100,9 +75,8 @@ const Register = () => {
                     <div className="form_heading">
                         <h1>Sign Up</h1>
                         <p style={{ textAlign: "center" }}>We are glad that you will be using Project Cloud to manage <br />
-                            your tasks! We hope that you will get like it.</p>
+                            your tasks! We hope that you will like it.</p>
                     </div>
-
                     <form>
                         <div className="form_input">
                             <label htmlFor="fname">Name</label>
@@ -121,7 +95,6 @@ const Register = () => {
                                 </div>
                             </div>
                         </div>
-
                         <div className="form_input">
                             <label htmlFor="password">Confirm Password</label>
                             <div className="two">
@@ -131,7 +104,6 @@ const Register = () => {
                                 </div>
                             </div>
                         </div>
-
                         <button className='btn' onClick={addUserdata}>Sign Up</button>
                         <p>Already have an account? <NavLink to="/">Log In</NavLink></p>
                     </form>
@@ -139,7 +111,7 @@ const Register = () => {
                 </div>
             </section>
         </>
-    )
-}
+    );
+};
 
-export default Register
+export default Register;
